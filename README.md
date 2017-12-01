@@ -66,6 +66,11 @@ Application URL: http://ec2-18-216-86-137.us-east-2.compute.amazonaws.com
 3. `$ sudo ufw allow 123/udp`.
 4. `$ sudo ufw enable`.
 
+## Setting up Flask
+
+> For this, I used the digital ocean tutorial found here: https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps
+> I found it extremely helpful, but it does leave some bits out, so I recommend checking out my thread here too: https://discussions.udacity.com/t/issues-deploying-application-to-lightsail/403522
+
 ### Step 9 - Install Apache, mod_wsgi
 
 1. `$ sudo apt-get install apache2`.
@@ -79,10 +84,18 @@ Application URL: http://ec2-18-216-86-137.us-east-2.compute.amazonaws.com
 
 ### Step 11 - Clone the Catalog app from Github
 
-1. `$ cd /var/www`. Then: `$ sudo mkdir catalog`.
-2. Change owner for the *catalog* folder: `$ sudo chown -R grader:grader catalog`.
-3. Move inside that newly created folder: `$ cd /catalog` and clone the catalog repository from Github: `$ git clone https://github.com/iliketomatoes/catalog.git catalog`.
-4. Make a *catalog.wsgi* file to serve the application over the *mod_wsgi*. That file should look like this:
+1. `$ cd /var/www`. Then: `$ sudo mkdir FlaskApp`.
+2. Change owner for the *catalog* folder: `$ sudo chown -R grader:grader FlaskApp`.
+3. Move inside that newly created folder: `$ cd /FlaskApp` and clone the item catalog repository from Github: `$ git clone https://github.com/adinsxx/fullstack-nanodegree-vm/tree/master/vagrant.git FlaskApp`.
+4. The structure should look like this: 
+|----FlaskApp
+|---------FlaskApp
+|--------------fullstack-nanodegree-vm
+
+5. Add a __init__.py file that will contain the flask app logic. I used mine to take the place of my project.py file. 
+(NOTE: CHECK YOUR INDENTATION, THIS WILL SAVE YOU A LOT OF HEARTACHE)
+
+6. Make a *catalog.wsgi* file to serve the application over the *mod_wsgi*. That file should look like this:
 
 ```python
 import sys
@@ -93,15 +106,11 @@ sys.path.insert(0, "/var/www/catalog/")
 from catalog import app as application
 ```
 
-### Step 12 - Install virtual environment, Flask and the project's dependencies
+### Step 12 - Install Flask and the project's dependencies
 
 1. Install *pip*, the tool for installing Python packages: `$ sudo apt-get install python-pip`.
-2. If *virtualenv* is not installed, use *pip* to install it using the following command: `$ sudo pip install virtualenv`.
-3. Move to the *catalog* folder: `$ cd /var/www/catalog`. Then create a new virtual environment with the following command: `$ sudo virtualenv venv`.
-4. Activate the virtual environment: `$ source venv/bin/activate`.
-5. Change permissions to the virtual environment folder: `$ sudo chmod -R 777 venv`.
-6. Install Flask: `$ pip install Flask`.
-7. Install all the other project's dependencies: `$ pip install bleach httplib2 request oauth2client sqlalchemy python-psycopg2`. 
+2. Install Flask: `$ pip install Flask`.
+3. Install all the other project's dependencies: `$ pip install bleach httplib2 request oauth2client sqlalchemy python-psycopg2`. 
 
 ### Step 13 - Configure and enable a new virtual host
 
@@ -132,30 +141,9 @@ from catalog import app as application
 3. Enable the new virtual host: `$ sudo a2ensite catalog`.
 
 ### Step 14 - Install and configure PostgreSQL
-
-1. Install some necessary Python packages for working with PostgreSQL: `$ sudo apt-get install libpq-dev python-dev`.
-2. Install PostgreSQL: `$ sudo apt-get install postgresql postgresql-contrib`.
-3. Postgres is automatically creating a new user during its installation, whose name is 'postgres'. That is a tusted user who can access the database software. So let's change the user with: `$ sudo su - postgres`, then connect to the database system with `$ psql`.
-4. Create a new user called 'catalog' with his password: `# CREATE USER catalog WITH PASSWORD 'sillypassword';`.
-5. Give *catalog* user the CREATEDB capability: `# ALTER USER catalog CREATEDB;`.
-6. Create the 'catalog' database owned by *catalog* user: `# CREATE DATABASE catalog WITH OWNER catalog;`.
-7. Connect to the database: `# \c catalog`.
-8. Revoke all rights: `# REVOKE ALL ON SCHEMA public FROM public;`.
-9. Lock down the permissions to only let *catalog* role create tables: `# GRANT ALL ON SCHEMA public TO catalog;`.
-10. Log out from PostgreSQL: `# \q`. Then return to the *grader* user: `$ exit`.
-11. Inside the Flask application, the database connection is now performed with: 
-```python
-engine = create_engine('postgresql://catalog:sillypassword@localhost/catalog')
-```
-12. Setup the database with: `$ python /var/www/catalog/catalog/setup_database.py`.
-13. To prevent potential attacks from the outer world we double check that no remote connections to the database are allowed. Open the following file: `$ sudo nano /etc/postgresql/9.3/main/pg_hba.conf` and edit it, if necessary, to make it look like this: 
-```
-local   all             postgres                                peer
-local   all             all                                     peer
-host    all             all             127.0.0.1/32            trust
-host    all             all             ::1/128                 md5
-```
-
+I followed this tutorial to the line in order to get my database set up. Make sure that you're calling the proper database in your
+database_setup.py, project.py, and items.py files!!
+https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-16-04
 
 ### 15 - Update OAuth authorized JavaScript origins
 
