@@ -8,7 +8,7 @@ Goals of the project given by our instructors from Udacity:
 
 The application meant to be deployed is the **Item catalog app**.
 
-## Useful info
+## Server Info
 
 IP address: 18.216.86.137
 
